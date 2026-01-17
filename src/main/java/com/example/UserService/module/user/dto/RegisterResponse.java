@@ -1,17 +1,20 @@
 package com.example.UserService.module.user.dto;
 
 public class RegisterResponse {
-    private String message;
+    private long userId;
+    private String userName;
 
-    public RegisterResponse(String message) {
-        this.message = message;
+
+    public RegisterResponse(long userId, String userName) {
+        this.userId = userId;
+        this.userName = userName;
     }
 
-    public String getMessage() {
-        return message;
+    public long getUserId() {
+        return userId;
     }
 
-    public void setMessage(String message) {
-        this.message = message;
+    public void setUserId(long userId) {
+        this.userId = userId;
     }
 }

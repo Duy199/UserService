@@ -84,6 +84,14 @@ public class AuthService {
         String username = jwtService.extractUsername(refreshToken);
         User user = userService.loadUserByUsername(username);
 
+        boolean tokenActive = sessionRepository.findByRefreshToken(refreshToken)
+                .orElseThrow(() -> new BusinessException("SESSION_NOT_FOUND", "Session not found", HttpStatus.NOT_FOUND))
+                .getIsActive();
+        
+        if (!tokenActive) {
+            throw new BusinessException("REFRESH_TOKEN_INACTIVE", "Refresh token is inactive", HttpStatus.UNAUTHORIZED);
+        }
+
         if (!jwtService.isTokenValid(refreshToken, user)) {
             throw new BusinessException("REFRESH_TOKEN_INVALID", "Refresh token is invalid or expired", HttpStatus.UNAUTHORIZED);
         }

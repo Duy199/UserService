@@ -5,7 +5,6 @@ import java.util.Date;
 
 import org.springframework.stereotype.Service;
 
-import com.example.UserService.module.user.model.User;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -23,18 +22,19 @@ public class JwtService {
     }
     
 
-    public String generateToken(User user) {
+    public String generateToken(String username) {
         return Jwts.builder()
-            .setSubject(user.getUserName())
+            .setSubject(username)
             .setIssuedAt(new Date())
             .setExpiration(new Date(System.currentTimeMillis() + props.getAccessTokenExp()))
             .signWith(getKey(), SignatureAlgorithm.HS256)
             .compact();
     }
 
-    public String generateRefreshToken(User user) {
+
+    public String generateRefreshToken(String username) {
         return Jwts.builder()
-            .setSubject(user.getUserName())
+            .setSubject(username)
             .setIssuedAt(new Date())
             .setExpiration(new Date(System.currentTimeMillis() + props.getRefreshTokenExp()))
             .signWith(getKey(), SignatureAlgorithm.HS256)
@@ -49,8 +49,8 @@ public class JwtService {
         return extractClaims(token).getSubject();
     }
 
-    public boolean isTokenValid(String token, User user) {
-        return extractUsername(token).equals(user.getUserName())
+    public boolean isTokenValid(String token, String userName) {
+        return extractUsername(token).equals(userName)
             && !extractClaims(token).getExpiration().before(new Date());
     }
 

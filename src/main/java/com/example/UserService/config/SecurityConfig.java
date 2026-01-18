@@ -17,11 +17,6 @@ import com.example.UserService.config.jwt.JwtAuthenticationFilter;
 // @RequiredArgsConstructor
 public class SecurityConfig {
 
-  public SecurityConfig(JwtAuthenticationFilter jwtAuthFilter) {
-    this.jwtAuthFilter = jwtAuthFilter;
-  }
-  private final JwtAuthenticationFilter jwtAuthFilter;
-
   @Bean
   public PasswordEncoder passwordEncoder() {
     return new BCryptPasswordEncoder();

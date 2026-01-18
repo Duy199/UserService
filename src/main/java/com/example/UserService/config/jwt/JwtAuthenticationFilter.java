@@ -2,17 +2,13 @@ package com.example.UserService.config.jwt;
 
 import java.io.IOException;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import com.example.UserService.module.user.model.User;
-import com.example.UserService.module.user.repository.SessionRepository;
 import com.example.UserService.module.user.service.UserService;
-import com.example.UserService.module.user.utils.Exceptions.BusinessException;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -24,12 +20,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
     private final UserService userService;
-    private final SessionRepository sessionRepository;
 
-    public JwtAuthenticationFilter(JwtService jwtService, UserService userService, SessionRepository sessionRepository) {
+    public JwtAuthenticationFilter(JwtService jwtService, UserService userService) {
         this.jwtService = jwtService;
         this.userService = userService;
-        this.sessionRepository = sessionRepository;
     }
 
     @Override
@@ -59,21 +53,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             || "undefined".equalsIgnoreCase(token)
             || token.chars().filter(ch -> ch == '.').count() != 2) {
             filterChain.doFilter(request, response);
-            return;
-        }
-
-        boolean active = sessionRepository.findByAccessToken(token).orElseThrow(() -> new BusinessException("SESSION_NOT_FOUND", "Session not found", HttpStatus.NOT_FOUND)).getIsActive();
-
-        if (!active) {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.setContentType("application/json");
-            response.getWriter().write("""
-            {
-            "success": false,
-            "code": "INACTIVE_SESSION",
-            "message": "Session is inactive"
-            }
-            """);
             return;
         }
 
@@ -108,12 +87,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            User user = userService.loadUserByUsername(username);
 
-            if (jwtService.isTokenValid(token, user)) {
+            if (jwtService.isTokenValid(token, username)) {
                 UsernamePasswordAuthenticationToken auth =
                     new UsernamePasswordAuthenticationToken(
-                        user,
+                        username,
                         null,
                         userService.getAuthorities()
                     );

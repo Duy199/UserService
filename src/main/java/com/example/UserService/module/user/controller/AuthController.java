@@ -2,8 +2,9 @@ package com.example.UserService.module.user.controller;
 
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.UserService.module.user.dto.LoginRequest;
+import com.example.UserService.module.user.dto.LoginResponse;
 import com.example.UserService.module.user.dto.RegisterRequest;
-import com.example.UserService.module.user.dto.RegisterResponse;
 import com.example.UserService.module.user.model.User;
 import com.example.UserService.module.user.service.AuthService;
 import com.example.UserService.module.user.utils.ResponseWrapper.ApiResponse;
@@ -29,20 +30,19 @@ public class AuthController {
 
 
     @PostMapping("register")
-    public ResponseEntity <ApiResponse<RegisterResponse>> register(@Valid @RequestBody RegisterRequest user) {
+    public ResponseEntity <ApiResponse<String>> register(@Valid @RequestBody RegisterRequest user) {
         
         // Call the AuthService to register the user
         User newUser = authService.registerUser(user.getUsername(), user.getPassword());
-
-        RegisterResponse response = new RegisterResponse(newUser.getId(), newUser.getUserName());
         
         // Return a success response
-        return ResponseEntity.ok(ApiResponse.success("User registered successfully", "200", response));
+        return ResponseEntity.ok(ApiResponse.success("User registered successfully", "200", "User registered successfully"));
     }
 
     @PostMapping("login")
-    public String login(@RequestBody String credentials) {
-        return "Logged in with: " + credentials;   
+    public ResponseEntity<ApiResponse<LoginResponse>> login(@Valid @RequestBody LoginRequest request) {
+        LoginResponse response = authService.authenticateUser(request.getUserName(), request.getPassword());
+        return ResponseEntity.ok(ApiResponse.success("Login successful", "200", response));   
     }
 
     @PostMapping("logout")

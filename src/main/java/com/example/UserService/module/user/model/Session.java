@@ -51,13 +51,16 @@ public class Session {
     public void setRefreshToken(String refreshToken) {
         this.refreshToken = refreshToken;
     }
-
+    
     public Long getExpiresAt() {
         return expiresAt;
     }
 
     public void setExpiresAt(Long expiresAt) {
         this.expiresAt = expiresAt;
+    }
+    public void setIsActive(Boolean isActive) {
+        this.isActive = isActive;
     }
 
     public Boolean getIsActive() {

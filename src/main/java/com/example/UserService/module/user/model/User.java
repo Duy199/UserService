@@ -17,6 +17,9 @@ public class User {
     @Column(name = "user_name", nullable = false, unique = true)
     private String userName;
 
+    @Column(name = "email", nullable = false, unique = true)
+    private String email;
+
     @Column(name = "password", nullable = false)
     private String password;
     
@@ -26,6 +29,12 @@ public class User {
     }
     public void setId(Long id) {
         this.id = id;
+    }
+    public String getEmail() {
+        return email;    
+    }
+    public void setEmail(String email) {
+        this.email = email;
     }
     public String getUserName() {
         return userName;

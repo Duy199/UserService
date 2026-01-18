@@ -15,6 +15,9 @@ public class Session {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "access_token", nullable = false)
+    private String accessToken;
+
     @Column(name = "refresh_token", nullable = false)
     private String refreshToken;
 
@@ -50,6 +53,12 @@ public class Session {
 
     public void setRefreshToken(String refreshToken) {
         this.refreshToken = refreshToken;
+    }
+    public String getAccessToken() {
+        return accessToken;
+    }
+    public void setAccessToken(String accessToken) {
+        this.accessToken = accessToken;
     }
     
     public Long getExpiresAt() {

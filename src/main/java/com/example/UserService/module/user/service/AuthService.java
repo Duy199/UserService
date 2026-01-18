@@ -42,7 +42,7 @@ public class AuthService {
     }
 
 
-    public User registerUser(String userName, String password) {
+    public User registerUser(String userName, String email, String password) {
         // Registration logic here
         User user = new User();
         
@@ -51,6 +51,7 @@ public class AuthService {
         }
         
         user.setUserName(userName);
+        user.setEmail(email);
         
         // Encode the password before saving
         String encodedPassword = passwordEncoder.encode(password);
@@ -74,7 +75,7 @@ public class AuthService {
         String accessToken = jwtService.generateToken(user);
         String refreshToken = jwtService.generateRefreshToken(user);
 
-        saveUserSession(user, refreshToken);
+        saveUserSession(user, refreshToken, accessToken);
 
         return new LoginResponse(user.getId(), user.getUserName(), accessToken, refreshToken);
     }
@@ -89,19 +90,29 @@ public class AuthService {
 
         String newAccessToken = jwtService.generateToken(user);
         String newRefreshToken = jwtService.generateRefreshToken(user);
-        saveUserSession(user, newRefreshToken);
+        saveUserSession(user, newRefreshToken, newAccessToken);
 
         return new RefreshTokenResponse(newAccessToken, newRefreshToken);
     }
 
-    public void saveUserSession (User user, String refreshToken) {
+    public void saveUserSession (User user, String refreshToken, String accessToken) {
         // Logic to save user session with refresh token
         Session session = new Session();
         session.setUserId(user.getId());
+        session.setAccessToken(accessToken);
         session.setRefreshToken(refreshToken);
         session.setExpiresAt(System.currentTimeMillis() + jwtService.getRefreshTokenExpiration());
         session.setIsActive(true);
         sessionRepository.save(session); 
+    }
+
+    public void revokeUserSession (String refreshToken) {
+        // Logic to revoke user session
+        Session session = sessionRepository.findByRefreshToken(refreshToken)
+                .orElseThrow(() -> new BusinessException("SESSION_NOT_FOUND", "Session not found", HttpStatus.NOT_FOUND));
+        
+        session.setIsActive(false);
+        sessionRepository.save(session);
     }
 }
     

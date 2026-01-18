@@ -14,6 +14,9 @@ import com.example.UserService.module.user.utils.ResponseWrapper.ApiResponse;
 import jakarta.validation.Valid;
 
 import org.springframework.web.bind.annotation.RequestMapping;
+
+import java.sql.Ref;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -30,12 +33,11 @@ public class AuthController {
     AuthService authService;
 
 
-
     @PostMapping("register")
     public ResponseEntity <ApiResponse<String>> register(@Valid @RequestBody RegisterRequest user) {
         
         // Call the AuthService to register the user
-        User newUser = authService.registerUser(user.getUsername(), user.getPassword());
+        authService.registerUser(user.getUsername(), user.getEmail(), user.getPassword());
         
         // Return a success response
         return ResponseEntity.ok(ApiResponse.success("User registered successfully", "200", "User registered successfully"));
@@ -48,14 +50,15 @@ public class AuthController {
     }
 
     @PostMapping("logout")
-    public String logout(@RequestBody String user) {
-        return "Logged out token: " + user;   
+    public ResponseEntity<ApiResponse<String>> logout(@Valid @RequestBody RefreshTokenRequest request) {
+        authService.revokeUserSession(request.getRefreshToken());
+        return ResponseEntity.ok(ApiResponse.success("Logged out successfully", "200", "Logged out token: " + request.getRefreshToken()));   
     }
     
     @PostMapping("refresh-token")
-    public ApiResponse<RefreshTokenResponse> refreshToken(@RequestBody RefreshTokenRequest request) {
+    public ResponseEntity<ApiResponse<RefreshTokenResponse>> refreshToken(@Valid @RequestBody RefreshTokenRequest request) {
         RefreshTokenResponse response = authService.getRefreshToken(request.getRefreshToken());
-        return ApiResponse.success("Refreshed token: " + request.getRefreshToken(), "200", response);
+        return ResponseEntity.ok(ApiResponse.success("Refreshed token: " + request.getRefreshToken(), "200", response));
     }
 
 }

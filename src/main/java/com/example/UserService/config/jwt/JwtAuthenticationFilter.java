@@ -11,7 +11,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import com.example.UserService.module.user.model.User;
 import com.example.UserService.module.user.service.UserService;
 
-import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -55,9 +54,30 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String username;
         try {
             username = jwtService.extractUsername(token);
-        } catch (JwtException | IllegalArgumentException e) {
-            // Token invalid/expired/bị sửa/sai format => không cho crash 500
-            filterChain.doFilter(request, response);
+        } catch (io.jsonwebtoken.ExpiredJwtException e) {
+
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json");
+            response.getWriter().write("""
+            {
+            "success": false,
+            "code": "TOKEN_EXPIRED",
+            "message": "Access token expired"
+            }
+            """);
+            return;
+
+        } catch (io.jsonwebtoken.JwtException | IllegalArgumentException e) {
+            // token sai, bị sửa, không hợp lệ
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json");
+            response.getWriter().write("""
+            {
+            "success": false,
+            "code": "INVALID_TOKEN",
+            "message": "Invalid access token"
+            }
+            """);
             return;
         }
 

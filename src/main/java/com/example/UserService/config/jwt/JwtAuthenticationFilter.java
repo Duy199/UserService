@@ -28,6 +28,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String path = request.getServletPath();
+        return path.startsWith("/api/v1/auth/");
+    }
+
+    @Override
     protected void doFilterInternal(
         HttpServletRequest request,
         HttpServletResponse response,
@@ -89,7 +95,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     new UsernamePasswordAuthenticationToken(
                         user,
                         null,
-                        userService.getAuthorities() // hoặc user.getAuthorities() nếu User implements UserDetails
+                        userService.getAuthorities()
                     );
 
                 auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));

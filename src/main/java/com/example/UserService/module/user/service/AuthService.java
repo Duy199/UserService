@@ -1,6 +1,8 @@
 package com.example.UserService.module.user.service;
 
 
+import java.sql.Ref;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -8,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import com.example.UserService.config.jwt.JwtService;
 import com.example.UserService.module.user.dto.LoginResponse;
+import com.example.UserService.module.user.dto.RefreshTokenResponse;
 import com.example.UserService.module.user.model.Session;
 import com.example.UserService.module.user.model.User;
 import com.example.UserService.module.user.repository.SessionRepository;
@@ -74,6 +77,21 @@ public class AuthService {
         saveUserSession(user, refreshToken);
 
         return new LoginResponse(user.getId(), user.getUserName(), accessToken, refreshToken);
+    }
+
+    public RefreshTokenResponse getRefreshToken (String refreshToken) {
+        String username = jwtService.extractUsername(refreshToken);
+        User user = userService.loadUserByUsername(username);
+
+        if (!jwtService.isTokenValid(refreshToken, user)) {
+            throw new BusinessException("REFRESH_TOKEN_INVALID", "Refresh token is invalid or expired", HttpStatus.UNAUTHORIZED);
+        }
+
+        String newAccessToken = jwtService.generateToken(user);
+        String newRefreshToken = jwtService.generateRefreshToken(user);
+        saveUserSession(user, newRefreshToken);
+
+        return new RefreshTokenResponse(newAccessToken, newRefreshToken);
     }
 
     public void saveUserSession (User user, String refreshToken) {

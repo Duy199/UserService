@@ -4,6 +4,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.UserService.module.user.dto.LoginRequest;
 import com.example.UserService.module.user.dto.LoginResponse;
+import com.example.UserService.module.user.dto.RefreshTokenRequest;
+import com.example.UserService.module.user.dto.RefreshTokenResponse;
 import com.example.UserService.module.user.dto.RegisterRequest;
 import com.example.UserService.module.user.model.User;
 import com.example.UserService.module.user.service.AuthService;
@@ -51,8 +53,9 @@ public class AuthController {
     }
     
     @PostMapping("refresh-token")
-    public String refreshToken(@RequestBody String token) {
-        return "Refreshed token: " + token;   
+    public ApiResponse<RefreshTokenResponse> refreshToken(@RequestBody RefreshTokenRequest request) {
+        RefreshTokenResponse response = authService.getRefreshToken(request.getRefreshToken());
+        return ApiResponse.success("Refreshed token: " + request.getRefreshToken(), "200", response);
     }
 
 }

@@ -103,7 +103,7 @@ public class AuthService {
 
         long expirationTime = jwtService.extractExpiration(token).getTime();
         // Add the token's JTI to the blacklist
-        tokenBlacklistService.addToBlacklist(jti, expirationTime);
+        tokenBlacklistService.addToBlacklist(jti, expirationTime, tokenType);
     }
 
     public void checkRefreshTokenBlacklisted(String refreshToken) {

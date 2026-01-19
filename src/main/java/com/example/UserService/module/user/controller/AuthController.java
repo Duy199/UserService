@@ -2,7 +2,6 @@ package com.example.UserService.module.user.controller;
 
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.UserService.module.user.dto.AccessTokenRequest;
 import com.example.UserService.module.user.dto.LoginRequest;
 import com.example.UserService.module.user.dto.LoginResponse;
 import com.example.UserService.module.user.dto.RefreshTokenRequest;

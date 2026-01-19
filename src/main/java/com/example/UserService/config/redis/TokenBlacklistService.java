@@ -14,10 +14,10 @@ public class TokenBlacklistService {
         this.redisTemplate = redisTemplate;
     }
 
-    public void addToBlacklist(String jti, long expirationTime) {
+    public void addToBlacklist(String jti, long expirationTime, String tokenType) {
         long ttl = expirationTime - System.currentTimeMillis();
         if (ttl > 0) {
-            redisTemplate.opsForValue().set(jti, "revoked", ttl, TimeUnit.MILLISECONDS);
+            redisTemplate.opsForValue().set(jti, tokenType + " revoked", ttl, TimeUnit.MILLISECONDS);
         }
     }
 

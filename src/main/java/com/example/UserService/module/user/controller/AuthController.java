@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 
 
 
@@ -49,13 +50,23 @@ public class AuthController {
     }
 
     @PostMapping("logout")
-    public ResponseEntity<ApiResponse<String>> logout(@Valid @RequestBody AccessTokenRequest request) {
-        authService.revokeUserTokens(request.getAccessToken());
+    public ResponseEntity<ApiResponse<String>> logout(@RequestHeader("Authorization") String authorizationHeader, @Valid @RequestBody RefreshTokenRequest request) {
+        // Revoke access token
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            String accessToken = authorizationHeader.substring(7).trim();
+            authService.revokeUserTokens(accessToken, "Access");
+        }
+        // Revoke refresh token
+        authService.revokeUserTokens(request.getRefreshToken(), "Refresh");
         return ResponseEntity.ok(ApiResponse.success("User logged out successfully", "200", null));
     }
     
     @PostMapping("refresh-token")
     public ResponseEntity<ApiResponse<RefreshTokenResponse>> refreshToken(@Valid @RequestBody RefreshTokenRequest request) {
+        // Check if refresh token is blacklisted
+        authService.checkRefreshTokenBlacklisted(request.getRefreshToken());
+
+        // Give new tokens
         RefreshTokenResponse response = authService.getRefreshToken(request.getRefreshToken());
         return ResponseEntity.ok(ApiResponse.success("Refreshed token: " + request.getRefreshToken(), "200", response));
     }

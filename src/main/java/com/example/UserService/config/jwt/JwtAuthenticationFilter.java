@@ -32,6 +32,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getServletPath();
+        if (path.equals("/api/v1/auth/logout")) {
+            return false;
+        }
         return path.startsWith("/api/v1/auth/");
     }
 
@@ -89,7 +92,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        // Check if the token is not blacklisted
+        // Check if the access token is not blacklisted
         String jti = jwtService.extractJtiString(token);
         if (tokenBlacklistService.isTokenBlacklisted(jti)) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -103,6 +106,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             """);
             return;
         }
+        
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 

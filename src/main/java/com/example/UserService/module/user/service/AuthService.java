@@ -93,17 +93,25 @@ public class AuthService {
         return new RefreshTokenResponse(newAccessToken, newRefreshToken);
     }
 
-    public void revokeUserTokens (String refreshToken) {
+    public void revokeUserTokens (String token, String tokenType) {
         String jti;
         try {
-            jti = jwtService.extractJtiString(refreshToken);
+            jti = jwtService.extractJtiString(token);
         } catch (io.jsonwebtoken.JwtException | IllegalArgumentException e) {
-            throw new BusinessException("ACCESS_TOKEN_INVALID", "Access token is invalid", HttpStatus.UNAUTHORIZED);
+            throw new BusinessException("TOKEN_INVALID", tokenType + " token is invalid", HttpStatus.UNAUTHORIZED);
         }
 
-        long expirationTime = jwtService.extractExpiration(refreshToken).getTime();
+        long expirationTime = jwtService.extractExpiration(token).getTime();
         // Add the token's JTI to the blacklist
         tokenBlacklistService.addToBlacklist(jti, expirationTime);
+    }
+
+    public void checkRefreshTokenBlacklisted(String refreshToken) {
+        String jti = jwtService.extractJtiString(refreshToken);
+        if (tokenBlacklistService.isTokenBlacklisted(jti)) {
+            throw new BusinessException("REFRESH_TOKEN_REVOKED", "Refresh token has been revoked", HttpStatus.UNAUTHORIZED);
+        }
+
     }
 }
     

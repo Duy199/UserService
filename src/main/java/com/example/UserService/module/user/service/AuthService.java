@@ -8,6 +8,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.example.UserService.config.jwt.JwtService;
+import com.example.UserService.config.redis.TokenBlacklistService;
 import com.example.UserService.module.user.dto.LoginResponse;
 import com.example.UserService.module.user.dto.RefreshTokenResponse;
 import com.example.UserService.module.user.model.User;
@@ -25,11 +26,15 @@ public class AuthService {
     private PasswordEncoder passwordEncoder;
 
     private final JwtService jwtService;
+
+    private final TokenBlacklistService tokenBlacklistService;
     
     public AuthService(
-        JwtService jwtService
+        JwtService jwtService,
+        TokenBlacklistService tokenBlacklistService
     ) {
         this.jwtService = jwtService;
+        this.tokenBlacklistService = tokenBlacklistService;
     }
 
 
@@ -86,6 +91,19 @@ public class AuthService {
         String newRefreshToken = jwtService.generateRefreshToken(username);
 
         return new RefreshTokenResponse(newAccessToken, newRefreshToken);
+    }
+
+    public void revokeUserTokens (String refreshToken) {
+        String jti;
+        try {
+            jti = jwtService.extractJtiString(refreshToken);
+        } catch (io.jsonwebtoken.JwtException | IllegalArgumentException e) {
+            throw new BusinessException("ACCESS_TOKEN_INVALID", "Access token is invalid", HttpStatus.UNAUTHORIZED);
+        }
+
+        long expirationTime = jwtService.extractExpiration(refreshToken).getTime();
+        // Add the token's JTI to the blacklist
+        tokenBlacklistService.addToBlacklist(jti, expirationTime);
     }
 }
     

@@ -2,6 +2,7 @@ package com.example.UserService.module.user.controller;
 
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.UserService.module.user.dto.AccessTokenRequest;
 import com.example.UserService.module.user.dto.LoginRequest;
 import com.example.UserService.module.user.dto.LoginResponse;
 import com.example.UserService.module.user.dto.RefreshTokenRequest;
@@ -47,6 +48,11 @@ public class AuthController {
         return ResponseEntity.ok(ApiResponse.success("Login successful", "200", response));   
     }
 
+    @PostMapping("logout")
+    public ResponseEntity<ApiResponse<String>> logout(@Valid @RequestBody AccessTokenRequest request) {
+        authService.revokeUserTokens(request.getAccessToken());
+        return ResponseEntity.ok(ApiResponse.success("User logged out successfully", "200", null));
+    }
     
     @PostMapping("refresh-token")
     public ResponseEntity<ApiResponse<RefreshTokenResponse>> refreshToken(@Valid @RequestBody RefreshTokenRequest request) {

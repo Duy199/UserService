@@ -8,6 +8,7 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import com.example.UserService.config.redis.TokenBlacklistService;
 import com.example.UserService.module.user.service.UserService;
 
 import jakarta.servlet.FilterChain;
@@ -20,10 +21,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
     private final UserService userService;
+    private final TokenBlacklistService tokenBlacklistService;
 
-    public JwtAuthenticationFilter(JwtService jwtService, UserService userService) {
+    public JwtAuthenticationFilter(JwtService jwtService, UserService userService, TokenBlacklistService tokenBlacklistService) {
         this.jwtService = jwtService;
         this.userService = userService;
+        this.tokenBlacklistService = tokenBlacklistService;
     }
 
     @Override
@@ -81,6 +84,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             "success": false,
             "code": "INVALID_TOKEN",
             "message": "Invalid access token"
+            }
+            """);
+            return;
+        }
+
+        // Check if the token is not blacklisted
+        String jti = jwtService.extractJtiString(token);
+        if (tokenBlacklistService.isTokenBlacklisted(jti)) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json");
+            response.getWriter().write("""
+            {
+            "success": false,
+            "code": "TOKEN_REVOKED",
+            "message": "Access token has been revoked"
             }
             """);
             return;

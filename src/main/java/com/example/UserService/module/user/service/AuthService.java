@@ -45,6 +45,10 @@ public class AuthService {
         if (userRepository.existsByUserName(userName)) {
             throw new BusinessException("USER_ALREADY_EXISTS", "Username already exists", HttpStatus.CONFLICT);
         }
+
+        if (userRepository.existsByEmail(email)) {
+            throw new BusinessException("EMAIL_ALREADY_EXISTS", "Email already exists", HttpStatus.CONFLICT);
+        }
         
         user.setUserName(userName);
         user.setEmail(email);
@@ -54,8 +58,12 @@ public class AuthService {
         user.setPassword(encodedPassword);
         
         // Save the user to the database
-        userRepository.save(user);
-
+        try {
+            userRepository.save(user);
+        } catch (Exception e) {
+            throw new RuntimeException("Error saving user: " + e.getMessage());
+        }
+        
         return user;
     }
 

@@ -30,11 +30,18 @@ public class GlobalExceptionHandler {
             .body(ApiResponse.error("Request body is missing or invalid JSON", "400", null));
     }
 
+
     // Handle Validation Errors
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiResponse<Void>> handleValid(MethodArgumentNotValidException ex) {
+        String errorMessage = ex.getBindingResult()
+            .getFieldErrors()
+            .stream()
+            .map(error -> error.getField() + ": " + error.getDefaultMessage())
+            .findFirst()
+            .orElse("Validation error");
         return ResponseEntity.badRequest()
-            .body(ApiResponse.error("Validation failed", "400", null));
+            .body(ApiResponse.error(errorMessage, "400", null));
     }
 
     // Handle HTTP Method Not Supported
